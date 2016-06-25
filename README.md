@@ -66,3 +66,45 @@ export let helloWorld = new Cmd(({argv}) => {
   `
 })
 ```
+
+## Ache Specific
+
+There are unfortunately some reserved sub-commands and flags here's a list and what they do.
+
+* `ache list` lists all the commands in the ache scope
+* `ache -C {path-to-directory}` changes the current working directory CWD to a specified path
+
+## Examples
+
+```
+examples$ npm i ache -g
+/Users/thomasreggi/.nvm/versions/node/v6.2.2/bin/ache -> /Users/thomasreggi/.nvm/versions/node/v6.2.2/lib/node_modules/ache/lib/bin.js
+/Users/thomasreggi/.nvm/versions/node/v6.2.2/lib
+└── ache@0.0.1
+
+examples$ cd 01_example/
+01_example$ ache
+01_example$ ache list
+[ 'meow-mix' ]
+01_example$ ache meow-mix
+meow meow meow meow meow meow
+
+01_example$ cd ..
+examples$ cd 02_example/
+02_example$ ache list
+[ 'bar', 'baz', 'foo', 'hello-world' ]
+02_example$ ache bar
+bar
+
+02_example$ ache hello-world
+hello-world
+
+02_example$ cd ..
+examples$ cd 03_example/
+03_example$ ache list
+[ 'bar', 'baz', 'foo', 'hello-world', 'meow-mix' ]
+03_example$ ache hello-world
+hello-world
+
+03_example$
+```
