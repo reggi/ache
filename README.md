@@ -10,7 +10,7 @@ I was sick and tired of build tools available. I simply want to leverage bash / 
 
 ## How it works
 
-Add a `achefile.js` to your project.
+Add a `achefile.js` or `achefiles` directory with many different JavaScript files to your project.
 
 ```js
 export let helloWorld = `
@@ -69,10 +69,14 @@ export let helloWorld = new Cmd(({argv}) => {
 
 ## Ache Specific
 
-There are unfortunately some reserved sub-commands and flags here's a list and what they do.
+Here's the operational flags you can pass to `ache`.
 
-* `ache list` lists all the commands in the ache scope
-* `ache -C {path-to-directory}` changes the current working directory CWD to a specified path
+* `ache --ache-scope` changes the path where ache looks for your ache scope
+* `ache --ache-cwd` changes the current working directory CWD to a specified path
+* `ache --ache-list` lists all the commands in the ache scope
+* `ache --ache-dry-run` logs the string command to be run (without running it)
+* `ache --ache-error` logs error stack trace instead of just error message
+* `ache --ache-verbose` shortcut for `DEBUG=ache` and `--ache-error`
 
 ## Examples
 
@@ -107,4 +111,20 @@ examples$ cd 03_example/
 hello-world
 
 03_example$
+```
+
+Here's an example of scope diving & setting the cwd.
+
+```
+ache$ cd examples
+examples$ ache --ache-scope ./01_example/ --ache-cwd ./03_example/ cat-file
+03_example
+examples$ ache --ache-scope ./01_example/ --ache-cwd ./03_example/ cat-file --ache-verbose
+  ache starting +0ms
+  ache argv {"_":["cat-file"],"ache-scope":"./01_example/","ache-cwd":"./03_example/","ache-verbose":true} +4ms
+  ache cwd /Users/thomasreggi/Desktop/ache/examples +1ms
+  ache ache scope /Users/thomasreggi/Desktop/ache/examples/01_example +0ms
+  ache ache cwd /Users/thomasreggi/Desktop/ache/examples/03_example +0ms
+  ache commands meow-mix, cat-file +124ms
+03_example
 ```

@@ -3,10 +3,12 @@ import minimist from 'minimist'
 import child_process from 'child_process'
 import Promise from 'bluebird'
 import decamelize from 'decamelize'
-import { assign, includes, keys, pickBy, extend, mapKeys } from 'lodash'
+import { size, assign, includes, keys, pickBy, extend, mapKeys } from 'lodash'
 import path from 'path'
 import fs from 'fs-promise'
-const execAsync = Promise.promisify(child_process.exec)
+const argv = minimist(process.argv.slice(2))
+if (argv['ache-verbose']) Debug.enable('ache')
+const spawn = child_process.spawn
 const debug = Debug('ache')
 
 export async function requireDirectory (dirLocation) {
@@ -73,21 +75,6 @@ export async function getAchefileModules (cwd) {
   })
 }
 
-export async function runCommand (cwd, acheTarget) {
-  let targets = await getAchefileModules(cwd)
-  let script = targets[acheTarget]
-  if (!script) {
-    if (keys(targets).length) {
-      debug('avalable commands %s', keys(targets).join(', '))
-    } else {
-      debug('no available commands')
-    }
-    throw new Error(`no command "${acheTarget}" found`)
-  }
-  let exec = await execAsync(script)
-  return exec
-}
-
 export function getCwd (cwd, argvCwd) {
   if (argvCwd && path.isAbsolute(argvCwd)) return argvCwd
   if (argvCwd) return path.join(cwd, argvCwd)
@@ -97,8 +84,52 @@ export function getCwd (cwd, argvCwd) {
 export async function acheCommand () {
   const argv = minimist(process.argv.slice(2))
   const cwd = getCwd(process.cwd(), argv.C)
-  debug(argv)
-  debug(cwd)
-  if (argv._[0] === 'list') return keys(await getAchefileModules(cwd))
-  return runCommand(cwd, argv._[0])
+  const acheTarget = argv._[0]
+  debug('argv %s', JSON.stringify(argv))
+  debug('cwd %s', cwd)
+  const acheScope = (argv['ache-scope']) ? path.resolve(argv['ache-scope']) : cwd
+  const acheCwd = (argv['ache-cwd']) ? path.resolve(argv['ache-cwd']) : cwd
+  debug('ache scope %s', acheScope)
+  debug('ache cwd %s', acheCwd)
+  let scripts = await getAchefileModules(acheScope)
+  debug('commands %s', keys(scripts).join(', '))
+  let script = scripts[acheTarget]
+  if (!size(scripts)) throw new Error('no available commands')
+  if (argv['ache-list']) return console.log(keys(scripts).map(script => `  ${script}`).join('\n'))
+  if (!script) throw new Error(`no command "${acheTarget}" found`)
+  if (argv['ache-dry-run']) return console.log(script)
+  const child = spawn('/bin/sh', [ '-c',  script], {
+    cwd: acheCwd,
+    stdio: 'inherit',
+    env: process.env
+  })
 }
+
+//
+// console.log(child.stdout)
+// console.log(child.stderr)
+// console.log(child)
+//
+// child.stdout.on('data', function (data) {
+//   console.log(data.toString('ascii'))
+// });
+//
+// child.stderr.on('data', function (data) {
+//   console.log(data.toString('ascii'))
+// });
+//
+// child.on('close', (code) => {
+//   debug('done')
+// });
+
+// console.log(process.env.DEBUG)
+// console.log('meow')
+
+// let child = exec(script, {
+//   shell: true,
+//   stdio: 'inherit',
+//   env: process.env
+// }, (err, value) => {
+//   // if (err) return Promise.reject(err)
+//   // return Promise.resolve(true)
+// })
