@@ -1,6 +1,6 @@
 {
   "name": "ache",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A bash script templater.",
   "main": "./lib/index.js",
   "bin": "./lib/bin.js",
